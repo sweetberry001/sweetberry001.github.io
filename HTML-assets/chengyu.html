@@ -96,9 +96,8 @@
             (e.style.display = "none"), cnt--;
           else e.style.top = top.toString() + "px";
         }
-        if (cnt < 20) {
+        if (cnt < 15) {
           pause(true);
-          alert("结束了！");
         }
       }
       function init_base() {
@@ -133,6 +132,7 @@
           button.setAttribute("onclick", "cont()");
         } else {
           button.style.display = "none";
+          alert("结束了！");
         }
       }
       function cont() {
