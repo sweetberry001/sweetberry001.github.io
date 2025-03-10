@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+      function exitFullScreen() {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+          document.mozCancelFullScreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        } else {
+          alert("Fail to exit fullscreen!");
+        }
+      }
+      let words,
+        seed,
+        body,
+        n,
+        m,
+        done,
+        cnt = 0,
+        interval,
+        nn = 0;
+      let screens = 5;
+      function rnd(l, r) {
+        seed ^= seed << 11;
+        seed ^= seed >> 4;
+        seed ^= seed << 5;
+        seed ^= seed << 14;
+        return (Math.abs(seed) % (r - l + 1)) + l;
+      }
+      function shuffle(sequence) {
+        let seq = sequence,
+          t = rnd(seq.length, seq.length * 2);
+        while (t--) {
+          let l = rnd(0, seq.length - 1),
+            r = rnd(0, seq.length - 1);
+          if (l != r) [seq[l], seq[r]] = [seq[r], seq[l]];
+        }
+        return seq;
+      }
+      function setpos(e, x, y) {
+        (e.style.top = (x * 125 + 22.5).toString() + "px"),
+          (e.style.left = (y * 275 + 22.5).toString() + "px");
+      }
+      function generatePos() {
+        let x = 0,
+          y = 0;
+        while (done[x][y]) {
+          x = rnd(0, n - 1);
+          y = rnd(0, m - 1);
+        }
+        done[x][y] = true;
+        console.log([x, y]);
+        return [x, y];
+      }
+      function genWord() {
+        return ["无错别字", "有错别字"];
+      }
+      function create_button() {
+        cnt++;
+        let button = document.createElement("p");
+        button.classList.add("word");
+        button.classList.add("flex");
+        button.setAttribute("id", ++nn);
+        let word = genWord();
+        if (rnd(1, 100) <= 50) {
+          button.innerHTML = word[1];
+          button.setAttribute("onclick", `clickButton(${nn},true)`);
+        } else {
+          button.innerHTML = word[0];
+          button.setAttribute("onclick", `clickButton(${nn},false)`);
+        }
+        let a = generatePos();
+        setpos(button, a[0], a[1]);
+        document.body.appendChild(button);
+      }
+      function clickButton(id, correct) {
+        let e = document.getElementById(id);
+        if (correct) {
+          e.classList.add("correct");
+        } else {
+          e.classList.add("wa");
+        }
+      }
+      function scroll(delta) {
+        delta = delta || 0.5;
+        for (let i = 1; i <= nn; i++) {
+          let e = document.getElementById(i);
+          let top = parseInt(e.style.top) - delta;
+          if (top <= 10 && e.style.display != "none")
+            (e.style.display = "none"), cnt--;
+          else e.style.top = top.toString() + "px";
+        }
+        if (cnt < 20) {
+          pause(true);
+          alert("结束了！");
+        }
+      }
+      function init_base() {
+        document.getElementById("start").style.display = "none";
+        body = document.body;
+        n =
+          parseInt((body.clientHeight / 125).toString().split(".")[0]) *
+          screens;
+        m = parseInt((body.clientWidth / 275).toString().split(".")[0]);
+        done = [];
+        for (let i = 0; i < n; i++) {
+          let tmp = [1];
+          for (let i = 1; i < m; i++) {
+            tmp = tmp.concat(0);
+          }
+          done = done.concat([tmp]);
+        }
+        seed = Date.parse(new Date()) / 1000;
+        for (let i = 1; i <= 15 * screens; i++) create_button();
+        scroll(-body.clientHeight);
+        cont();
+      }
+      function init() {
+        //document.documentElement.requestFullscreen();
+        setTimeout(init_base, 500);
+      }
+      function pause(final) {
+        clearInterval(interval);
+        if (!final) {
+          let button = document.getElementById("startstop");
+          button.innerHTML = "始";
+          button.setAttribute("onclick", "cont()");
+        } else {
+          button.style.display = "none";
+        }
+      }
+      function cont() {
+        let button = document.getElementById("startstop");
+        button.setAttribute("onclick", "pause(false)");
+        button.innerHTML = "停";
+        button.style.display = "";
+        interval = setInterval(scroll, 10);
+      }
+    </script>
+    <style>
+      iframe {
+        display: none;
+      }
+      .flex {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      body {
+        background-color: #55bdcc;
+        height: 95vh;
+        width: 95vw;
+        overflow: hidden;
+      }
+      .word {
+        background-color: #eed311;
+        border-radius: 20px;
+        width: 230px;
+        height: 80px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-size: 50px;
+        position: fixed;
+      }
+      button {
+        background-color: #44ed5e;
+        border-radius: 20px;
+        width: 250px;
+        height: 80px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-size: 40px;
+        position: fixed;
+      }
+      #startstop {
+        position: fixed;
+        left: 5px;
+        bottom: 5px;
+        width: 60px;
+        height: 60px;
+        border-radius: 30px;
+      }
+      .correct {
+        color: rgb(46, 97, 12);
+        font-weight: bold;
+      }
+      .wa {
+        font-weight: bold;
+        color: #800000;
+      }
+    </style>
+  </head>
+  <body class="flex">
+    <button id="start" class="flex" onclick="init()">开始</button>
+    <button
+      id="startstop"
+      class="flex"
+      onclick="pause(false)"
+      style="display: none"
+    >
+      停
+    </button>
+  </body>
+</html>
