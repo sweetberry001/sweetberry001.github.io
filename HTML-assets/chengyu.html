@@ -127,8 +127,8 @@
       }
       function pause(final) {
         clearInterval(interval);
+        let button = document.getElementById("startstop");
         if (!final) {
-          let button = document.getElementById("startstop");
           button.innerHTML = "始";
           button.setAttribute("onclick", "cont()");
         } else {
